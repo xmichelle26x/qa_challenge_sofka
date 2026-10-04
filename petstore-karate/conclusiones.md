@@ -1,8 +1,6 @@
-====================================================================
-CONCLUSIONES DEL EJERCICIO 2 - PETSTORE (API REST con KARATE)
-====================================================================
+## CONCLUSIONES - PETSTORE (API REST con KARATE)
 
-1. ENFOQUE
+### 1. ENFOQUE
    Se implementaron pruebas de API REST usando Karate DSL sobre
    el servicio público PetStore (https://petstore.swagger.io/v2/).
    Karate permite definir escenarios de API en lenguaje Gherkin
@@ -10,7 +8,7 @@ CONCLUSIONES DEL EJERCICIO 2 - PETSTORE (API REST con KARATE)
    interacción, lo cual reduce drásticamente el tiempo de
    desarrollo y el código de mantenimiento.
 
-2. ESCENARIOS CUBIERTOS
+### 2. ESCENARIOS CUBIERTOS
    - Añadir mascota: POST /pet con body JSON.
    - Consultar mascota por ID: GET /pet/{petId}.
    - Actualizar mascota: POST /pet/{petId} con form-data
@@ -20,7 +18,7 @@ CONCLUSIONES DEL EJERCICIO 2 - PETSTORE (API REST con KARATE)
    - Consultar por status: GET /pet/findByStatus?status=sold,
      filtrando por ID para localizar la mascota creada.
 
-3. DECISIONES TÉCNICAS
+### 3. DECISIONES TÉCNICAS
    - Uso de karate-config.js para centralizar la URL base y
      facilitar la migración a otros entornos (qa, prod).
    - Parametrización del ID y nombre con "def" para que los
@@ -36,7 +34,7 @@ CONCLUSIONES DEL EJERCICIO 2 - PETSTORE (API REST con KARATE)
      "match response == """...""" para detectar cambios
      estructurales que las validaciones puntuales no detectarían.
 
-4. HALLAZGOS SOBRE PETSTORE
+### 4. HALLAZGOS SOBRE PETSTORE
    - POST /pet devuelve 200 (no 201, que sería lo esperado en
      REST puro).
    - POST /pet/{petId} requiere Content-Type:
@@ -50,7 +48,7 @@ CONCLUSIONES DEL EJERCICIO 2 - PETSTORE (API REST con KARATE)
    - Si un campo no se envía en el POST inicial, la API puede
      devolverlo como null o no incluirlo.
 
-5. LECCIONES APRENDIDAS
+### 5. LECCIONES APRENDIDAS
    - Los tests deben ser INDEPENDIENTES: cada feature prepara su
      propio estado en lugar de depender del orden de ejecución.
      Karate ejecuta los features en orden alfabético, lo cual
@@ -62,7 +60,7 @@ CONCLUSIONES DEL EJERCICIO 2 - PETSTORE (API REST con KARATE)
      detecta cambios estructurales que las validaciones
      puntuales no detectarían.
 
-6. ALINEACIÓN CON LA DOCUMENTACIÓN SWAGGER
+### 6. ALINEACIÓN CON LA DOCUMENTACIÓN SWAGGER
    Se verificó que los 4 endpoints utilizados están documentados
    oficialmente en https://petstore.swagger.io/:
 
@@ -79,7 +77,7 @@ CONCLUSIONES DEL EJERCICIO 2 - PETSTORE (API REST con KARATE)
    caso de uso del ejercicio (actualizar únicamente name y
    status), POST /pet/{petId} con form-data es el apropiado.
 
-8. RECOMENDACIONES PARA PRODUCCIÓN
+### 7. RECOMENDACIONES PARA PRODUCCIÓN
    - Parametrizar la URL base para múltiples ambientes
      (dev, qa, prod) usando karate-config.js.
    - Agregar más escenarios: búsqueda por tags, actualización
