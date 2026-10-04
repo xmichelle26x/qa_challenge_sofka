@@ -28,3 +28,9 @@
 ## Notas
 - El flujo de compra en Demoblaze no requiere login/sign up.
 - Los reportes incluyen screenshots y trazabilidad paso a paso.
+
+## Reporte
+   target/                                          # Carpeta generada por Maven (se ignora en Git)
+       └── site/
+           └── serenity/
+               └── index.html                           # Reporte Serenity
