@@ -30,7 +30,9 @@
 - Los reportes incluyen screenshots y trazabilidad paso a paso.
 
 ## Reporte
+```plaintext
    target/                                          # Carpeta generada por Maven (se ignora en Git)
        └── site/
            └── serenity/
                └── index.html                           # Reporte Serenity
+```
