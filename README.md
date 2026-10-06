@@ -89,3 +89,30 @@ java -version
 mvn -version
 ```
 
+# Ejercicio de Performance con K6
+
+## Requisitos
+- Tener instalado K6 (https://k6.io/docs/getting-started/installation/)
+- Node.js opcional si se usa mock-server
+
+## Ejecución
+1. Clonar el repositorio:
+  ```bash
+   git clone https://github.com/xmichelle26x/qa_challenge_sofka.git
+   cd qa_challenge_sofka/performance-k6
+```
+
+2. Ejecutar el script de carga:
+```bash
+   k6 run login-load-test.js
+```
+
+4. Revisar resultados:
+   - Consola: métricas de tiempo de respuesta, throughput, errores
+   - Archivo: resultado-k6.txt
+
+## Evidencia
+Los reportes y hallazgos se encuentran en:
+- resultado-k6.txt
+- conclusiones.txt
+
