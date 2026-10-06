@@ -80,7 +80,10 @@ ESTRUCTURA
 performance-k6/
 ├── data/
 │   └── users.csv
+├── Informe ejercicio 1 performance.docx
+├── InformeResultados.docx
+├── conclusiones.txt
 ├── login-load-test.js
 ├── mock-server.js
 ├── readme.txt
-└── conclusiones.txt
+└── resultado-k6.txt
