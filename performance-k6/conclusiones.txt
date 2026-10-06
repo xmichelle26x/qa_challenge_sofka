@@ -1,0 +1,124 @@
+====================================================================
+CONCLUSIONES DEL EJERCICIO DE PERFORMANCE
+====================================================================
+
+1. ENFOQUE
+   Se implementó una prueba de carga con K6 sobre el endpoint
+   POST https://fakestoreapi.com/auth/login, siguiendo el enunciado del ejercicio:
+   - Alcanzar al menos 20 TPS.
+   - Tiempo de respuesta máximo de 1.5 segundos.
+   - Tasa de error máxima del 3%.
+
+2. CONFIGURACIÓN DEL SCRIPT
+   - Herramienta: K6
+   - Executor: constant-arrival-rate
+   - Rate: 25 iteraciones/segundo (margen sobre los 20 TPS)
+   - Duración: 1 minuto
+   - Usuarios: cargados desde data/users.csv (6 usuarios)
+   - Thresholds:
+     * http_req_duration p(95) < 1500ms
+     * http_req_failed rate < 0.03
+     * checks rate > 0.97
+
+3. RESULTADO DE LA EJECUCIÓN
+   
+   Fecha de ejecución: 2026-10-04
+   
+   Estado del servicio bajo prueba: CAÍDO
+   
+   Evidencia:
+   - Error HTTP 522 de Cloudflare al acceder a
+     https://fakestoreapi.com/auth/login.
+   - Cloudflare reportó:
+     * Browser (cliente): Working
+     * Cloudflare (proxy): Working
+     * Host (fakestoreapi.com): Error
+   - El servidor de origen de FakeStoreAPI no responde a las
+     peticiones (timeout de 20s).
+   
+   Resultados obtenidos en K6:
+   
+   | Métrica              | Objetivo | Obtenido | Cumple |
+   |----------------------|----------|----------|--------|
+   | Throughput           | ≥ 20 TPS | 3.8 TPS  | ❌ No  |
+   | Response time (p95)  | < 1.5s   | 19.97s   | ❌ No  |
+   | Tasa de error        | < 3%     | 100%     | ❌ No  |
+   | Checks pasados       | > 97%    | 0%       | ❌ No  |
+   | Iteraciones completas| 1500     | 303      | ❌ No  |
+   | Dropped iterations   | 0        | 1,197    | ❌ No  |
+   
+   Distribución de errores:
+   - Status 303 (redirect de Cloudflare): 100% de las peticiones.
+
+4. ANÁLISIS DE LA CAUSA RAÍZ
+   
+   El fallo de la prueba no es un problema del script K6 ni de
+   la configuración. Es una consecuencia directa de la
+   indisponibilidad del servicio bajo prueba.
+   
+   Cadena de eventos:
+   1. K6 envía POST a fakestoreapi.com/auth/login.
+   2. Cloudflare recibe la petición correctamente.
+   3. Cloudflare intenta reenviarla al servidor de origen.
+   4. El servidor de origen NO responde.
+   5. Cloudflare espera ~20s (timeout) y devuelve HTTP 522.
+   6. K6 recibe el 303 como fallo de check.
+   7. Los timeouts de 20s impiden mantener 25 TPS.
+   8. K6 descarta iteraciones por falta de VUs disponibles.
+
+5. LECCIONES APRENDIDAS
+   
+   - Las pruebas de carga contra servicios públicos dependen de
+     la disponibilidad del servicio. Un QA debe contemplar esta
+     posibilidad y no confundirla con un fallo del script.
+   - El status 303 combinado con timeouts de 20s es la firma
+     típica de una redirección de Cloudflare por origen caído.
+   - El error 522 es específico de Cloudflare y significa
+     "origen no responde".
+   - Cuando un test falla al 100% con el mismo error, la causa
+     suele ser externa al script (red, servicio, credenciales).
+   - Es importante capturar la evidencia visual (screenshot del
+     522) para respaldar el diagnóstico.
+
+6. RECOMENDACIONES
+   
+   Para el script:
+   - El script está correcto y probado.
+   - Añadir un check de "status != 303" para detectar
+     redirecciones de Cloudflare en el futuro.
+   
+   Para el ejercicio:
+   - Reintentar la ejecución cuando FakeStoreAPI vuelva a estar
+     disponible (es un servicio público intermitente).
+   - Alternativamente, ejecutar contra un mock local para
+     validar el script (ver sección 7).
+   - Documentar la fecha y hora exacta de cada ejecución para
+     trazabilidad.
+   
+   Para producción:
+   - Usar entornos controlados o mocks para pruebas
+     deterministas.
+   - Implementar circuit breakers en los servicios que
+     consumen APIs externas.
+
+7. VALIDACIÓN DEL SCRIPT CON MOCK LOCAL (evidencia adicional)
+   
+   Para descartar que el fallo fuera del script, se realizó una
+   ejecución alternativa contra un mock local en Node.js que
+   emula el comportamiento del endpoint:
+   
+   - Mock: http://localhost:3000/auth/login
+   - Comportamiento:
+     * Credenciales válidas → 200 OK con token.
+     * Credenciales inválidas → 401 Unauthorized.
+   
+   Resultado:
+   - Throughput: 25 TPS (objetivo cumplido).
+   - Response time (p95): < 50ms.
+   - Tasa de error: 0%.
+   - Checks pasados: 100%.
+   
+   Conclusión: el script K6 es correcto y cumple los objetivos
+   cuando el servicio bajo prueba está disponible. El fallo en
+   la ejecución principal se debe exclusivamente a la caída de
+   FakeStoreAPI.
